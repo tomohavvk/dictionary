@@ -1,19 +1,27 @@
 package com.tomohavvk.dictionary.web;
 
-import com.tomohavvk.dictionary.common.dto.TranslationDTO;
-import org.springframework.web.bind.annotation.*;
+import com.tomohavvk.dictionary.common.dto.TranslateRequest;
+import com.tomohavvk.dictionary.common.dto.TranslateResponse;
+import com.tomohavvk.dictionary.service.TranslateService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
-@RestController()
-@RequestMapping("/api/v1/translations")
+@RestController
+@RequestMapping("/api/v1/translate")
 public class TranslationController {
 
-    public TranslationController() {
+    private TranslateService translateService;
 
+    public TranslationController(TranslateService translateService) {
+        this.translateService = translateService;
     }
 
     @PostMapping
-    public Mono<TranslationDTO> store(@RequestBody TranslationDTO translation) {
-        return Mono.just(new TranslationDTO(translation.original(), translation.translation()));
+    public Mono<TranslateResponse> translate(@RequestBody TranslateRequest request) {
+
+        return translateService.translate(request);
     }
 }

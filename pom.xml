@@ -9,6 +9,9 @@
     <packaging>pom</packaging>
     <name>dictionary</name>
 
+    <properties>
+        <project.version>0.0.1-SNAPSHOT</project.version>
+    </properties>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -19,11 +22,12 @@
         <module>launcher</module>
         <module>common</module>
         <module>web</module>
+        <module>service</module>
+        <module>parser</module>
         <module>persistence</module>
     </modules>
 
     <dependencies>
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -42,6 +46,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.5.4</version>
         </dependency>
     </dependencies>
 
@@ -71,6 +81,18 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>6.5.2</version>
+
+                <configuration>
+                    <url>jdbc:postgresql://localhost/dictionary_service</url>
+                    <user>root</user>
+                    <password>password</password>
+                </configuration>
             </plugin>
         </plugins>
     </build>

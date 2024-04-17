@@ -1,10 +1,23 @@
-create sequence if not exists await_translate_seq start 1 increment 1;
+create sequence if not exists sources_id_seq start 1 increment 1;
 
-create table await_translate
+create table sources
 (
-  id   BIGINT DEFAULT nextval('await_translate_seq') PRIMARY KEY,
-  word varchar(255) not null
+  id              BIGINT DEFAULT nextval('sources_id_seq') PRIMARY KEY,
+  source          varchar(255) not null,
+  source_language varchar(16) not null
 );
 
+create unique index if not exists sources_source_idx on sources(source);
 
-create unique index if not exists await_translate_word_idx on await_translate(word);
+create sequence if not exists targets_id_seq start 1 increment 1;
+
+create table targets
+(
+  id              BIGINT DEFAULT nextval('targets_id_seq') PRIMARY KEY,
+  source          varchar(255) not null,
+  target          varchar(255) not null,
+  source_language varchar(16) not null,
+  target_language varchar(16) not null
+);
+
+create unique index if not exists targets_source_target_idx on targets(source, target);

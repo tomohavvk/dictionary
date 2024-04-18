@@ -24,7 +24,6 @@
             <artifactId>service</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>com.tomohavvk.dictionary</groupId>
             <artifactId>web</artifactId>

@@ -1,13 +1,12 @@
 package com.tomohavvk.dictionary.parser;
 
-import com.tomohavvk.dictionary.common.models.ParseCommand;
-import com.tomohavvk.dictionary.persistence.TranslateRepository;
+import com.tomohavvk.dictionary.common.models.ExtractCommand;
 import com.tomohavvk.dictionary.persistence.entities.SourceEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -16,12 +15,10 @@ import java.util.LinkedList;
 @RequiredArgsConstructor
 public class WordsParser {
 
-    private final TranslateRepository translateRepository;
-
     private final ExchangeStrategies strategies = ExchangeStrategies.builder()
             .codecs(codecs -> codecs.defaultCodecs().maxInMemorySize(16 * 1024 * 1024)).build();
 
-    public Mono<Long> parse(ParseCommand command) {
+    public Flux<SourceEntity> parse(ExtractCommand command) {
         var client = WebClient.builder().exchangeStrategies(strategies).baseUrl(command.url()).build();
 
         return client.get().retrieve().bodyToMono(String.class).map(content -> Arrays.stream(content.split("\n")))
@@ -33,10 +30,10 @@ public class WordsParser {
                         res = res.split(split.by())[index];
                     }
                     return res;
-                })).flatMap(stream -> {
-                    var sources = new LinkedList<>(stream.map(word -> new SourceEntity(0L, word, "en")).toList());
+                })).flux().concatMap(stream -> {
+                    var sources = stream.map(word -> new SourceEntity(0L, word, command.sourceLanguage())).toList();
 
-                    return translateRepository.upsertSources(sources).reduce(Long::sum);
+                    return Flux.fromIterable(sources);
                 });
     }
 }

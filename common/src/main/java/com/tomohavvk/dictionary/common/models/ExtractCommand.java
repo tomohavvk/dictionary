@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-public record ParseCommand(String url, String sourceLanguage, List<String> filterBy, ArrayList<Split> splitBy) {
+public record ExtractCommand(String url, String sourceLanguage, List<String> filterBy, ArrayList<Split> splitBy) {
 
     @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
     public static record Split(String by, Boolean isTakeLeft) {

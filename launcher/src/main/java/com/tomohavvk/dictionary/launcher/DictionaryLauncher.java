@@ -2,18 +2,23 @@ package com.tomohavvk.dictionary.launcher;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.web.WebProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.web.reactive.config.EnableWebFlux;
 
-@SpringBootApplication(scanBasePackages = "com.tomohavvk.dictionary")
+@EnableWebFlux
 @PropertySource("classpath:application.properties")
 @PropertySource("classpath:persistence.properties")
-@EnableR2dbcRepositories(basePackages = { "com.tomohavvk.dictionary.persistence" })
-@EnableWebFlux
+@SpringBootApplication(scanBasePackages = "com.tomohavvk.dictionary")
 public class DictionaryLauncher {
 
     public static void main(String[] args) {
         SpringApplication.run(DictionaryLauncher.class, args);
+    }
+
+    @Bean
+    public WebProperties.Resources resources() {
+        return new WebProperties.Resources();
     }
 }

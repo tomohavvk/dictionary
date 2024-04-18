@@ -1,7 +1,7 @@
-package com.tomohavvk.dictionary.persistence;
+package com.tomohavvk.dictionary.persistence.impl;
 
+import com.tomohavvk.dictionary.persistence.SourceRepository;
 import com.tomohavvk.dictionary.persistence.entities.SourceEntity;
-import com.tomohavvk.dictionary.persistence.entities.TargetEntity;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Result;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 import java.util.LinkedList;
 
 @Repository
-public class TranslateRepositoryImpl implements TranslateRepository {
+public class SourceRepositoryImpl implements SourceRepository {
 
     private DatabaseClient db;
 
@@ -22,9 +22,11 @@ public class TranslateRepositoryImpl implements TranslateRepository {
         this.db = DatabaseClient.create(connectionFactory);
     }
 
-    public Flux<SourceEntity> streamSources(String sourceLanguage) {
-        return db.sql("select id, source, source_language from sources where source_language = :sourceLanguage")
-                .bind(0, sourceLanguage).mapProperties(SourceEntity.class).all();
+    public Flux<SourceEntity> selectSources(String sourceLanguage, int limit, int offset) {
+        return db.sql(
+                "select id, source, source_language from sources where source_language = :sourceLanguage order by id limit :limit offset :offset")
+                .bind("sourceLanguage", sourceLanguage).bind("limit", limit).bind("offset", offset)
+                .mapProperties(SourceEntity.class).all();
     }
 
     public Flux<Long> upsertSources(LinkedList<SourceEntity> sources) {
@@ -50,13 +52,5 @@ public class TranslateRepositoryImpl implements TranslateRepository {
 
     public Mono<Long> deleteSource(SourceEntity source) {
         return db.sql("delete from sources where id = :id").bind("id", source.id()).fetch().rowsUpdated();
-    }
-
-    public Mono<Long> upsertTarget(TargetEntity target) {
-        return db.sql(
-                "insert into targets (source, target, source_language, target_language) values (:source, :target, :source_language, :target_language) ON CONFLICT (source, target) DO NOTHING")
-                .bind("source", target.source()).bind("target", target.target())
-                .bind("source_language", target.sourceLanguage()).bind("target_language", target.targetLanguage())
-                .fetch().rowsUpdated();
     }
 }

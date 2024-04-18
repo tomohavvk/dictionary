@@ -1,10 +1,11 @@
 ## Spring webflux playground
 
-- Dictionary service allows to parse words from website based on rules and then translate words to target language using Google Translate API. The translation result is stored into the database
+- Manual ETL service which allows to load and parse words from external website, then transform(translate using Google Translate API) words and then load the transformed(translated) data
 
-Parse words request example:
-```json
-curl --location 'http://localhost:8080/api/v1/parse' \
+Extract words request:
+
+```
+curl --location 'http://localhost:8080/api/v1/extract' \
 --header 'Content-Type: application/json' \
 --data '{
     "url": "https://www.use-in-a-sentence.com/english-words/10000-words/the-most-frequent-10000-words-of-english.html",
@@ -26,12 +27,19 @@ curl --location 'http://localhost:8080/api/v1/parse' \
 }'
 ```
 
-Translate words request example:
-```json
-curl --location 'http://localhost:8080/api/v1/translate' \
+Transform words request:
+
+```
+curl --location 'http://localhost:8080/api/v1/transform' \
 --header 'Content-Type: application/json' \
 --data '{
     "source_language": "en",
     "target_language": "uk"
 }'
+```
+
+Load translations request:
+
+```
+curl --location 'http://localhost:8080/api/v1/load?sourceLanguage=en&targetLanguage=uk&limit=100&offset=0'
 ```

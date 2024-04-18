@@ -8,6 +8,7 @@ create table sources
 );
 
 create unique index if not exists sources_source_idx on sources(source);
+create index if not exists sources_source_language_idx on sources(source_language);
 
 create sequence if not exists targets_id_seq start 1 increment 1;
 
@@ -21,3 +22,5 @@ create table targets
 );
 
 create unique index if not exists targets_source_target_idx on targets(source, target);
+
+create index if not exists targets_source_language_target_language_idx on targets(source_language, target_language);

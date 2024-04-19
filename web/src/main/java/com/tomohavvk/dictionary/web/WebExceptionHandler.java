@@ -8,12 +8,12 @@ import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWe
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
@@ -23,8 +23,11 @@ import java.util.Map;
 public class WebExceptionHandler extends AbstractErrorWebExceptionHandler {
     private Logger logger = LoggerFactory.getLogger(WebExceptionHandler.class);
 
+    private record ErrorResponse(int code, String message) {
+    }
+
     public WebExceptionHandler(ErrorAttributes errorAttributes, WebProperties.Resources resources,
-                               ApplicationContext applicationContext, ServerCodecConfigurer configurer) {
+            ApplicationContext applicationContext, ServerCodecConfigurer configurer) {
         super(errorAttributes, resources, applicationContext);
         this.setMessageWriters(configurer.getWriters());
     }
@@ -35,16 +38,16 @@ public class WebExceptionHandler extends AbstractErrorWebExceptionHandler {
     }
 
     private Mono<ServerResponse> renderErrorResponse(ServerRequest request) {
-
         var error = super.getError(request);
-        logger.error(error.toString());
+        logger.error(request.path(), error);
 
         var errorMessage = switch (error) {
-        case AppException e -> e.getMessage();
-        default -> "Internal Server Error";
+        case AppException e -> new ErrorResponse(400, e.getMessage());
+        case ResponseStatusException e -> new ErrorResponse(e.getStatusCode().value(), e.getMessage());
+        default -> new ErrorResponse(500, "Internal Server Error");
         };
 
-        return ServerResponse.status(HttpStatus.BAD_REQUEST).contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(Map.of("error", errorMessage)));
+        return ServerResponse.status(errorMessage.code()).contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(Map.of("error", errorMessage.message())));
     }
 }

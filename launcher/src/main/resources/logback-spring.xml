@@ -21,7 +21,8 @@
 
     <logger name="org.tomohavvk" level="DEBUG"/>
     <logger name="org.springframework" level="INFO"/>
-    <logger name="io.r2dbc.postgresql.QUERY" level="DEBUG"/>
+    <logger name="io.r2dbc.postgresql.QUERY" level="INFO"/>
+    <logger name="io.r2dbc.postgresql.PARAM" level="INFO"/>
     <logger name="io.r2dbc.postgresql.client" level="INFO"/>
     <logger name="reactor.netty" level="INFO"/>
     <logger name="io.netty" level="INFO"/>

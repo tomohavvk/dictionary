@@ -12,6 +12,8 @@ import com.tomohavvk.dictionary.persistence.entities.TargetEntity;
 import com.tomohavvk.dictionary.service.TranslateETLService;
 import com.tomohavvk.dictionary.service.TranslateUtils;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
@@ -22,6 +24,8 @@ import java.util.LinkedList;
 @Service
 @RequiredArgsConstructor
 public class TranslateETLServiceImpl implements TranslateETLService {
+    private final Logger logger = LoggerFactory.getLogger(TranslateETLServiceImpl.class);
+
     private final WordsParser parser;
     private final TransactionalOperator rxtx;
     private final TranslateUtils translateUtils;
@@ -69,7 +73,17 @@ public class TranslateETLServiceImpl implements TranslateETLService {
     private Flux<String> getTranslation(SourceEntity source, String targetLanguage) {
         var options = TranslateOption.sourceLanguage(source.sourceLanguage()).targetLanguage(targetLanguage);
 
-        return Flux.just(translateUtils.getTranslator().translate(source.source(), options).getTranslatedText());
+        return Mono
+                .fromCallable(
+                        () -> translateUtils.getTranslator().translate(source.source(), options).getTranslatedText())
+                .filter(translation -> nonEquals(source.source(), translation)).onErrorResume(error -> {
+                    logger.error(error.getMessage());
+                    return Mono.empty();
+                }).flux();
+    }
+
+    private static boolean nonEquals(String a, String b) {
+        return !a.equalsIgnoreCase(b);
     }
 
 }

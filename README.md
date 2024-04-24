@@ -1,6 +1,7 @@
 ## Spring webflux playground
 
-- Manual ETL service which allows to load and parse words from external website, then transform(translate using Google Translate API) words and then load the transformed(translated) data
+- Manual ETL service which allows to load and parse words from external website, then transform(translate using Google
+  Translate API) words and then load the transformed(translated) dictionary
 
 Extract words request:
 

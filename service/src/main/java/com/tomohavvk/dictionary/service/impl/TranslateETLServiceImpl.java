@@ -12,19 +12,21 @@ import com.tomohavvk.dictionary.persistence.entities.TargetEntity;
 import com.tomohavvk.dictionary.service.TranslateETLService;
 import com.tomohavvk.dictionary.service.TranslateUtils;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TranslateETLServiceImpl implements TranslateETLService {
-    private final Logger logger = LoggerFactory.getLogger(TranslateETLServiceImpl.class);
 
     private final WordsParser parser;
     private final TransactionalOperator rxtx;
@@ -34,8 +36,9 @@ public class TranslateETLServiceImpl implements TranslateETLService {
 
     @Override
     public Mono<Long> extract(ExtractCommand command) {
-        return parser.parse(command).collectList()
-                .flatMap(sources -> sourceRepository.upsertSources(new LinkedList<>(sources)).reduce(Long::sum));
+        return parser.parse(command).collectList().map(TranslateETLServiceImpl::chunked).flux()
+                .flatMap(Flux::fromIterable).flatMap(chunk -> sourceRepository.upsertSources(new LinkedList<>(chunk)))
+                .reduce(Long::sum);
     }
 
     @Override
@@ -51,7 +54,7 @@ public class TranslateETLServiceImpl implements TranslateETLService {
 
     private Mono<Long> translate(TransformCommand command, int limit, int offset) {
         return sourceRepository.selectSources(command.sourceLanguage(), limit, offset)
-                .flatMap(source -> proceed(source, command.targetLanguage())).collectList().flatMap(list -> {
+                .flatMap(source -> translate(source, command.targetLanguage())).collectList().flatMap(list -> {
                     if (list.isEmpty())
                         return Mono.just(0L);
                     else
@@ -59,15 +62,21 @@ public class TranslateETLServiceImpl implements TranslateETLService {
                 });
     }
 
+    private Flux<Long> translate(SourceEntity source, String targetLanguage) {
+        return getTranslation(source, targetLanguage).map(translation -> new TargetEntity(0L, source.source(),
+                        translation, source.sourceLanguage(), targetLanguage))
+                .flatMap(target -> saveAndCleanup(source, target));
+    }
+
     private Mono<Long> saveAndCleanup(SourceEntity source, TargetEntity target) {
         return targetRepository.upsertTarget(target).then(sourceRepository.deleteSource(source))
                 .as(rxtx::transactional);
     }
 
-    private Flux<Long> proceed(SourceEntity source, String targetLanguage) {
-        return getTranslation(source, targetLanguage).map(translation -> new TargetEntity(0L, source.source(),
-                translation, source.sourceLanguage(), targetLanguage))
-                .flatMap(target -> saveAndCleanup(source, target));
+    private static List<List<SourceEntity>> chunked(List<SourceEntity> sources) {
+        return IntStream.range(0, sources.size()).boxed().collect(
+                        Collectors.groupingBy(index -> index / 500, Collectors.mapping(sources::get, Collectors.toList())))
+                .values().stream().toList();
     }
 
     private Flux<String> getTranslation(SourceEntity source, String targetLanguage) {
@@ -77,12 +86,12 @@ public class TranslateETLServiceImpl implements TranslateETLService {
                 .fromCallable(
                         () -> translateUtils.getTranslator().translate(source.source(), options).getTranslatedText())
                 .filter(translation -> nonEquals(source.source(), translation)).onErrorResume(error -> {
-                    logger.error(error.getMessage());
+                    log.error(error.getMessage());
                     return Mono.empty();
                 }).flux();
     }
 
-    private static boolean nonEquals(String a, String b) {
+    private boolean nonEquals(String a, String b) {
         return !a.equalsIgnoreCase(b);
     }
 

@@ -24,7 +24,7 @@ public class SourceRepositoryImpl implements SourceRepository {
 
     public Flux<SourceEntity> selectSources(String sourceLanguage, int limit, int offset) {
         return db.sql(
-                "select id, source, source_language from sources where source_language = :sourceLanguage order by id limit :limit offset :offset")
+                        "select id, source, source_language from sources where source_language = :sourceLanguage order by id limit :limit offset :offset")
                 .bind("sourceLanguage", sourceLanguage).bind("limit", limit).bind("offset", offset)
                 .mapProperties(SourceEntity.class).all();
     }
@@ -33,7 +33,7 @@ public class SourceRepositoryImpl implements SourceRepository {
         if (sources.isEmpty())
             return Flux.just(0L);
         else
-            return this.db.inConnectionMany(connection -> {
+            return db.inConnectionMany(connection -> {
 
                 SourceEntity last = sources.removeLast();
 

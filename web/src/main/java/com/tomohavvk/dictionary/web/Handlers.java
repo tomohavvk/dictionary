@@ -33,11 +33,11 @@ public class Handlers {
     }
 
     public Mono<ServerResponse> load(ServerRequest request) {
-        return makeCommand(request).flatMap(command -> translateService.load(command).collectList()
+        return makeLoadCommand(request).flatMap(command -> translateService.load(command).collectList()
                 .flatMap(targets -> ServerResponse.ok().body(BodyInserters.fromValue(targets))));
     }
 
-    private Mono<LoadCommand> makeCommand(ServerRequest request) {
+    private Mono<LoadCommand> makeLoadCommand(ServerRequest request) {
         var sourceLanguage = request.queryParam("sourceLanguage");
         var targetLanguage = request.queryParam("targetLanguage");
 

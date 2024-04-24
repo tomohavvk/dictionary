@@ -1,8 +1,7 @@
 package com.tomohavvk.dictionary.web;
 
 import com.tomohavvk.dictionary.common.exceptions.AppException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
@@ -18,16 +17,16 @@ import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
-@Component
+@Slf4j
 @Order(-2)
+@Component
 public class WebExceptionHandler extends AbstractErrorWebExceptionHandler {
-    private Logger logger = LoggerFactory.getLogger(WebExceptionHandler.class);
 
-    private record ErrorResponse(int code, String message) {
+    private record CodeWithError(int code, String message) {
     }
 
     public WebExceptionHandler(ErrorAttributes errorAttributes, WebProperties.Resources resources,
-            ApplicationContext applicationContext, ServerCodecConfigurer configurer) {
+                               ApplicationContext applicationContext, ServerCodecConfigurer configurer) {
         super(errorAttributes, resources, applicationContext);
         this.setMessageWriters(configurer.getWriters());
     }
@@ -39,12 +38,12 @@ public class WebExceptionHandler extends AbstractErrorWebExceptionHandler {
 
     private Mono<ServerResponse> renderErrorResponse(ServerRequest request) {
         var error = super.getError(request);
-        logger.error(request.path(), error);
+        log.error(request.path(), error);
 
         var errorMessage = switch (error) {
-        case AppException e -> new ErrorResponse(400, e.getMessage());
-        case ResponseStatusException e -> new ErrorResponse(e.getStatusCode().value(), e.getMessage());
-        default -> new ErrorResponse(500, "Internal Server Error");
+            case AppException e -> new CodeWithError(400, e.getMessage());
+            case ResponseStatusException e -> new CodeWithError(e.getStatusCode().value(), e.getMessage());
+            default -> new CodeWithError(500, "Internal Server Error");
         };
 
         return ServerResponse.status(errorMessage.code()).contentType(MediaType.APPLICATION_JSON)

@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class TranslateETLServiceImpl implements TranslateETLService {
 
     @Override
     public Mono<Long> transform(TransformCommand command) {
-        return translate(command, 1000, 0);
+        return translate(command);
     }
 
     @Override
@@ -52,20 +53,23 @@ public class TranslateETLServiceImpl implements TranslateETLService {
                 command.offset());
     }
 
-    private Mono<Long> translate(TransformCommand command, int limit, int offset) {
-        return sourceRepository.selectSources(command.sourceLanguage(), limit, offset)
-                .flatMap(source -> translate(source, command.targetLanguage())).collectList().flatMap(list -> {
-                    if (list.isEmpty())
+    private Mono<Long> translate(TransformCommand command) {
+        return sourceRepository.selectSources(command.sourceLanguage(), 1000, 0)
+                .parallel(10)
+                .runOn(Schedulers.parallel())
+                .flatMap(source -> translate(source, command.targetLanguage())
+                        .flatMap(target -> saveAndCleanup(source, target)))
+                .sequential().collectList().flatMap(list -> {
+                    if (list.isEmpty()) {
                         return Mono.just(0L);
-                    else
-                        return translate(command, limit, offset + limit).map(acc -> acc + (long) list.size());
+                    } else
+                        return translate(command).map(acc -> acc + (long) list.size());
                 });
     }
 
-    private Flux<Long> translate(SourceEntity source, String targetLanguage) {
+    private Flux<TargetEntity> translate(SourceEntity source, String targetLanguage) {
         return getTranslation(source, targetLanguage).map(translation -> new TargetEntity(0L, source.source(),
-                        translation, source.sourceLanguage(), targetLanguage))
-                .flatMap(target -> saveAndCleanup(source, target));
+                translation, source.sourceLanguage(), targetLanguage));
     }
 
     private Mono<Long> saveAndCleanup(SourceEntity source, TargetEntity target) {

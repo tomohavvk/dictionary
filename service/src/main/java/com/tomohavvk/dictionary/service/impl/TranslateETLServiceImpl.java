@@ -55,11 +55,12 @@ public class TranslateETLServiceImpl implements TranslateETLService {
 
     private Mono<Long> translate(TransformCommand command) {
         return sourceRepository.selectSources(command.sourceLanguage(), 1000, 0)
-                .parallel(10)
-                .runOn(Schedulers.parallel())
+                .parallel(Runtime.getRuntime().availableProcessors())
+                .runOn(Schedulers.boundedElastic())
                 .flatMap(source -> translate(source, command.targetLanguage())
                         .flatMap(target -> saveAndCleanup(source, target)))
-                .sequential().collectList().flatMap(list -> {
+                .sequential()
+                .collectList().flatMap(list -> {
                     if (list.isEmpty()) {
                         return Mono.just(0L);
                     } else

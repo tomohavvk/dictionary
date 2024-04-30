@@ -53,14 +53,14 @@ kafka:
       schema-registry-url: ${kafka.schema-registry-url}
       topic: event-api.start-translation
       group-id: event-api.start-translation-group
-      max-poll-interval-ms: 1000
+      max-poll-interval-ms: 30000
       auto-offset-reset: earliest
     end-translation:
       bootstrap-servers: ${kafka.bootstrap-servers}
       schema-registry-url: ${kafka.schema-registry-url}
       topic: event-api.end-translation
       group-id: event-api.end-translation-group
-      max-poll-interval-ms: 1000
+      max-poll-interval-ms: 30000
       auto-offset-reset: earliest
 #
 #logging:

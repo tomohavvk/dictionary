@@ -2,7 +2,6 @@ package com.tomohavvk.translator.services.impl;
 
 import com.tomohavvk.translator.common.commands.LoadTranslationsCommand;
 import com.tomohavvk.translator.common.commands.TranslateCommand;
-import com.tomohavvk.translator.common.models.TranslationSource;
 import com.tomohavvk.translator.extractor.WordsExtractor;
 import com.tomohavvk.translator.kafka.EventsProducer;
 import com.tomohavvk.translator.kafka.events.EventMeta;
@@ -31,13 +30,12 @@ public class TranslatorServiceImpl implements TranslatorService {
 
     @Override
     public Mono<Long> translate(TranslateCommand command) {
-        return extractor.extract(command).map(source -> new TranslationSource(source, command.sourceLanguage()))
-                .flatMap(source -> {
-                    var startTranslateEvent = new StartTranslateEvent(source.source(), command.sourceLanguage(),
-                            command.targetLanguage(), new EventMeta(UUID.randomUUID(), LocalDateTime.now().toString()));
-                    return startTranslationEventsProducer
-                            .produce(startTranslateEvent.getMeta().getId(), startTranslateEvent).map(__ -> 1L);
-                }).reduce(Long::sum);
+        return extractor.extract(command.url(), command.filter(), command.split()).flatMap(source -> {
+            var startTranslateEvent = new StartTranslateEvent(source, command.sourceLanguage(),
+                    command.targetLanguage(), new EventMeta(UUID.randomUUID(), LocalDateTime.now().toString()));
+            return startTranslationEventsProducer.produce(startTranslateEvent.getMeta().getId(), startTranslateEvent)
+                    .map(__ -> 1L);
+        }).reduce(Long::sum);
     }
 
     @Override

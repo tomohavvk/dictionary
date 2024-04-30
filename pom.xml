@@ -84,26 +84,6 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-
-            <!--            <plugin>-->
-            <!--                <groupId>org.apache.avro</groupId>-->
-            <!--                <artifactId>avro-maven-plugin</artifactId>-->
-            <!--                <version>${avro.version}</version>-->
-            <!--                <configuration>-->
-            <!--                    <sourceDirectory>${project.basedir}/../</sourceDirectory>-->
-            <!--                    <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>-->
-            <!--                </configuration>-->
-            <!--                <executions>-->
-            <!--                    <execution>-->
-            <!--                        <phase>generate-sources</phase>-->
-            <!--                        <goals>-->
-            <!--                            <goal>schema</goal>-->
-            <!--                        </goals>-->
-            <!--                    </execution>-->
-            <!--                </executions>-->
-            <!--            </plugin>-->
-
-
             <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
@@ -116,50 +96,8 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-                <version>6.5.2</version>
-
-                <configuration>
-                    <url>jdbc:postgresql://localhost/translator_service</url>
-                    <user>root</user>
-                    <password>password</password>
-                </configuration>
-            </plugin>
-
-
         </plugins>
 
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.eclipse.m2e</groupId>
-                    <artifactId>lifecycle-mapping</artifactId>
-                    <version>1.0.0</version>
-                    <configuration>
-                        <lifecycleMappingMetadata>
-                            <pluginExecutions>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>org.apache.avro</groupId>
-                                        <artifactId>avro-maven-plugin</artifactId>
-                                        <version>${avro.version}</version>
-                                        <goals>
-                                            <goal>schema</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <execute/>
-                                    </action>
-                                </pluginExecution>
-                            </pluginExecutions>
-                        </lifecycleMappingMetadata>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
 
 </project>

@@ -1,8 +1,8 @@
 scrape_configs:
-  - job_name: 'dictionary-metrics'
+  - job_name: 'translator-metrics'
     metrics_path: '/actuator/prometheus'
     scrape_interval: 3s
     static_configs:
       - targets: [ 'host.docker.internal:8080' ]
         labels:
-          application: 'Dictionary Spring Application'
+          application: 'Translator Spring Application'

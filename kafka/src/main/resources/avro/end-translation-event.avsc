@@ -1,0 +1,43 @@
+{
+  "type": "record",
+  "name": "EndTranslateEvent",
+  "namespace": "com.tomohavvk.translator.kafka.events",
+  "fields": [
+    {
+      "name": "source",
+      "type": "string"
+    },
+    {
+      "name": "target",
+      "type": "string"
+    },
+    {
+      "name": "sourceLanguage",
+      "type": "string"
+    },
+    {
+      "name": "targetLanguage",
+      "type": "string"
+    },
+    {
+      "name": "meta",
+      "type": {
+        "type": "record",
+        "name": "EventMeta",
+        "fields": [
+          {
+            "name": "id",
+            "type": {
+              "type": "string",
+              "logicalType": "uuid"
+            }
+          },
+          {
+            "name": "createdAt",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}

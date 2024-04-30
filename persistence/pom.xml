@@ -3,13 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.tomohavvk.dictionary</groupId>
+    <groupId>com.tomohavvk.translator</groupId>
     <artifactId>persistence</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
     <parent>
         <groupId>com.tomohavvk</groupId>
-        <artifactId>dictionary</artifactId>
+        <artifactId>translator</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 

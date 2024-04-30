@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: translator
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/translator_service
+    username: root
+    password: password
+  flyway:
+    locations: classpath:db/migration
+    url: jdbc:postgresql://localhost:5432/translator_service
+  show-sql: true
+
+server:
+  host: 0.0.0.0
+
+translation:
+  api:
+    key: ${TRANSLATION_API_KEY:fake_api_key}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus
+  tags:
+    application: ${spring.application.name}
+
+kafka:
+  bootstrap-servers: localhost:9092
+  schema-registry-url: http://localhost:8085
+  producers:
+    start-translation:
+      bootstrap-servers: ${kafka.bootstrap-servers}
+      schema-registry-url: ${kafka.schema-registry-url}
+      topic: event-api.start-translation
+      ack: 1
+      request-timeout-ms: 30000
+      retry:
+        attempts: 3
+        interval-ms: 1000
+    end-translation:
+      bootstrap-servers: ${kafka.bootstrap-servers}
+      schema-registry-url: ${kafka.schema-registry-url}
+      topic: event-api.end-translation
+      ack: 1
+      request-timeout-ms: 30000
+      retry:
+        attempts: 3
+        interval-ms: 1000
+  consumers:
+    start-translation:
+      bootstrap-servers: ${kafka.bootstrap-servers}
+      schema-registry-url: ${kafka.schema-registry-url}
+      topic: event-api.start-translation
+      group-id: event-api.start-translation-group
+      max-poll-interval-ms: 1000
+      auto-offset-reset: earliest
+    end-translation:
+      bootstrap-servers: ${kafka.bootstrap-servers}
+      schema-registry-url: ${kafka.schema-registry-url}
+      topic: event-api.end-translation
+      group-id: event-api.end-translation-group
+      max-poll-interval-ms: 1000
+      auto-offset-reset: earliest
+#
+#logging:
+#  level:
+#    io.r2dbc.postgresql.QUERY: DEBUG
+#    org.springframework.r2dbc: DEBUG
+

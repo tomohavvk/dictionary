@@ -3,6 +3,7 @@ package com.tomohavvk.translator.persistence.impl;
 import com.tomohavvk.translator.persistence.TranslationsRepository;
 import com.tomohavvk.translator.persistence.entities.TranslationEntity;
 import io.r2dbc.spi.ConnectionFactory;
+import lombok.val;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.r2dbc.core.DatabaseClient;
 import org.springframework.stereotype.Repository;
@@ -19,7 +20,7 @@ public class TranslationsRepositoryImpl implements TranslationsRepository {
     }
 
     public Mono<Long> upsertTranslation(TranslationEntity target) {
-        var query = """
+        val query = """
                 insert into translations (source, target, source_language, target_language)
                   values (:source, :target, :source_language, :target_language) ON CONFLICT (source, target) DO NOTHING""";
 
@@ -30,7 +31,7 @@ public class TranslationsRepositoryImpl implements TranslationsRepository {
 
     public Flux<TranslationEntity> selectTranslations(String sourceLanguage, String targetLanguage, int limit,
             int offset) {
-        var query = """
+        val query = """
                 select id, source, target, source_language, target_language from translations
                  where source_language = :sourceLanguage and target_language = :targetLanguage order by id limit :limit offset :offset""";
 

@@ -10,6 +10,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.reactive.TransactionalOperator;
 import reactor.core.Disposable;
@@ -31,7 +32,7 @@ public class EndTranslateEventHandlerImpl implements EndTranslateEventHandler {
     private Disposable disposable;
 
     public Mono<Long> handle(EndTranslateEvent event) {
-        var entity = new TranslationEntity(0L, event.getSource().toString(), event.getTarget().toString(),
+        val entity = new TranslationEntity(0L, event.getSource().toString(), event.getTarget().toString(),
                 event.getSourceLanguage().toString(), event.getTargetLanguage().toString());
 
         return targetRepository.upsertTranslation(entity).as(rxtx::transactional);

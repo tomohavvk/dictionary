@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.io.Serializable;
 import java.util.function.BiPredicate;
+import lombok.val;
 
 @Slf4j
 @Service
-public class TranslatorImpl implements Translator {
+public class TranslatorImpl implements Translator, Serializable {
 
     private final TranslateOptions translateOptions;
 
@@ -20,10 +22,11 @@ public class TranslatorImpl implements Translator {
     }
 
     public Mono<String> translate(String source, String sourceLanguage, String targetLanguage) {
+
         if (translateOptions.getApiKey().equalsIgnoreCase("fake_api_key")) {
             return translateStub(source);
         } else {
-            var options = Translate.TranslateOption.sourceLanguage(sourceLanguage).targetLanguage(targetLanguage);
+            val options = Translate.TranslateOption.sourceLanguage(sourceLanguage).targetLanguage(targetLanguage);
 
             return Mono.fromCallable(() -> translateOptions.getService().translate(source, options).getTranslatedText())
                     .filter(translation -> nonEquals.test(source, translation)).onErrorResume(error -> {

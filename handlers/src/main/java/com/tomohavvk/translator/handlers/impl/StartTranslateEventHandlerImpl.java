@@ -11,6 +11,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.stereotype.Service;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
@@ -34,7 +35,7 @@ public class StartTranslateEventHandlerImpl implements StartTranslateEventHandle
     public Flux<SenderResult<UUID>> handle(StartTranslateEvent event) {
         return translator.translate(event.getSource().toString(), event.getSourceLanguage().toString(),
                 event.getTargetLanguage().toString()).flux().flatMap(translation -> {
-                    var endTranslateEvent = new EndTranslateEvent(event.getSource(), translation,
+                    val endTranslateEvent = new EndTranslateEvent(event.getSource(), translation,
                             event.getSourceLanguage(), event.getTargetLanguage(),
                             new EventMeta(UUID.randomUUID(), LocalDateTime.now().toString()));
 

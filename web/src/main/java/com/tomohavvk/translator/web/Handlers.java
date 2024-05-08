@@ -10,7 +10,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
-
+import lombok.val;
 import java.util.Map;
 
 @Component
@@ -31,8 +31,8 @@ public class Handlers {
     }
 
     private Mono<LoadTranslationsCommand> makeLoadCommand(ServerRequest request) {
-        var sourceLanguage = request.queryParam("sourceLanguage");
-        var targetLanguage = request.queryParam("targetLanguage");
+        val sourceLanguage = request.queryParam("sourceLanguage");
+        val targetLanguage = request.queryParam("targetLanguage");
 
         if (sourceLanguage.isEmpty())
             return Mono.error(new InvalidRequestException("missing required query parameter: sourceLanguage"));
@@ -40,8 +40,8 @@ public class Handlers {
             return Mono.error(new InvalidRequestException("missing required query parameter: targetLanguage"));
         else
             try {
-                var limit = request.queryParam("limit").map(Integer::valueOf).orElse(100);
-                var offset = request.queryParam("offset").map(Integer::valueOf).orElse(0);
+                val limit = request.queryParam("limit").map(Integer::valueOf).orElse(100);
+                val offset = request.queryParam("offset").map(Integer::valueOf).orElse(0);
 
                 return Mono
                         .just(new LoadTranslationsCommand(sourceLanguage.get(), targetLanguage.get(), limit, offset));

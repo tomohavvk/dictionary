@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.val;
 
 @Slf4j
 @Service
@@ -31,7 +32,7 @@ public class TranslatorServiceImpl implements TranslatorService {
     @Override
     public Mono<Long> translate(TranslateCommand command) {
         return extractor.extract(command.url(), command.filter(), command.split()).flatMap(source -> {
-            var startTranslateEvent = new StartTranslateEvent(source, command.sourceLanguage(),
+            val startTranslateEvent = new StartTranslateEvent(source, command.sourceLanguage(),
                     command.targetLanguage(), new EventMeta(UUID.randomUUID(), LocalDateTime.now().toString()));
             return startTranslationEventsProducer.produce(startTranslateEvent.getMeta().getId(), startTranslateEvent)
                     .map(__ -> 1L);

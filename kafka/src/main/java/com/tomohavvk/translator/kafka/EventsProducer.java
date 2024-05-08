@@ -16,6 +16,7 @@ import reactor.kafka.sender.SenderRecord;
 import reactor.kafka.sender.SenderResult;
 
 import java.util.Map;
+import lombok.val;
 
 @Slf4j
 public class EventsProducer<K, E> {
@@ -29,7 +30,7 @@ public class EventsProducer<K, E> {
     }
 
     public Flux<SenderResult<K>> produce(K key, E event) {
-        var record = SenderRecord.create(new ProducerRecord<>(config.topic(), key, event), key);
+        val record = SenderRecord.create(new ProducerRecord<>(config.topic(), key, event), key);
 
         return sender.send(Mono.just(record)).doOnError(e -> log.error("failed to send message", e))
                 .doOnNext(result -> {

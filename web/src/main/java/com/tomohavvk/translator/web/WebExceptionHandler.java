@@ -2,6 +2,7 @@ package com.tomohavvk.translator.web;
 
 import com.tomohavvk.translator.web.exceptions.InvalidRequestException;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.boot.autoconfigure.web.WebProperties;
 import org.springframework.boot.autoconfigure.web.reactive.error.AbstractErrorWebExceptionHandler;
 import org.springframework.boot.web.reactive.error.ErrorAttributes;
@@ -37,10 +38,10 @@ public class WebExceptionHandler extends AbstractErrorWebExceptionHandler {
     }
 
     private Mono<ServerResponse> renderErrorResponse(ServerRequest request) {
-        var error = super.getError(request);
+        val error = super.getError(request);
         log.error(request.path(), error);
 
-        var errorMessage = switch (error) {
+        val errorMessage = switch (error) {
         case InvalidRequestException e -> new ErrorWithCode(e.getMessage(), 400);
         case ResponseStatusException e -> new ErrorWithCode(e.getMessage(), e.getStatusCode().value());
         default -> new ErrorWithCode("Internal Server Error", 500);

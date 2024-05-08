@@ -4,6 +4,7 @@ import com.tomohavvk.translator.common.commands.TranslateCommand;
 import com.tomohavvk.translator.common.models.Split;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -24,7 +25,7 @@ public class WordsExtractorImpl implements WordsExtractor {
     @Override
     public Flux<String> extract(String url, List<String> filterBy, List<Split> splitBy) {
         // TODO init and reuse the client
-        var client = WebClient.builder().exchangeStrategies(strategies).baseUrl(url).build();
+        val client = WebClient.builder().exchangeStrategies(strategies).baseUrl(url).build();
 
         return client.get().retrieve().bodyToMono(String.class).map(content -> Arrays.stream(content.split("\n")))
                 .map(stream -> stream.filter(content -> filterBy.stream().allMatch(content::contains)))
@@ -37,8 +38,8 @@ public class WordsExtractorImpl implements WordsExtractor {
         if (splitBy.isEmpty())
             return content;
         else {
-            var split = splitBy.removeFirst();
-            var index = split.isTakeLeft() ? 0 : 1;
+            val split = splitBy.removeFirst();
+            val index = split.isTakeLeft() ? 0 : 1;
             return split(splitBy, content.split(split.by())[index]);
         }
     }
